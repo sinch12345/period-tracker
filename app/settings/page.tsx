@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Navbar from '@/components/Navbar';
 import { Download, Trash2, ShieldCheck } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -22,23 +23,25 @@ export default function SettingsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-rose-50/40 p-6">
+    <main className="min-h-screen bg-rose-50/40 dark:bg-slate-950 p-6 transition-colors duration-300">
       <div className="max-w-4xl mx-auto space-y-6">
+        <Navbar activeTab="settings" />
+
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Account & Privacy Settings</h1>
-          <p className="text-gray-500 text-xs mt-1">Manage your data preferences and backups.</p>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Account & Privacy Settings</h1>
+          <p className="text-gray-500 dark:text-slate-400 text-xs mt-1">Manage your data preferences and backups.</p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-rose-100 space-y-6">
-          <div className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-800 text-xs">
-            <ShieldCheck className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-rose-100 dark:border-slate-800 space-y-6">
+          <div className="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/40 rounded-xl text-emerald-800 dark:text-emerald-300 text-xs">
+            <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
             <span>
               <strong>Privacy Active:</strong> All logs remain exclusively inside your browser's LocalStorage. No health data is sold or transmitted to third-party servers.
             </span>
           </div>
 
-          <div className="border-t border-gray-100 pt-6 space-y-4">
-            <h3 className="text-sm font-bold text-gray-800">Data Controls</h3>
+          <div className="border-t border-gray-100 dark:border-slate-800 pt-6 space-y-4">
+            <h3 className="text-sm font-bold text-gray-800 dark:text-slate-100">Data Controls</h3>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <button
@@ -51,7 +54,7 @@ export default function SettingsPage() {
 
               <button
                 onClick={handleClearData}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-xl border border-red-200 transition"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 text-xs font-semibold rounded-xl border border-red-200 dark:border-red-900/50 transition"
               >
                 <Trash2 className="w-4 h-4" />
                 Clear Local Data

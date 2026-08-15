@@ -1,21 +1,14 @@
-import type { Metadata } from 'next';
+import React from 'react';
 import './globals.css';
-import Navbar from '@/components/Navbar';
-
-export const metadata: Metadata = {
-  title: 'AuraCycle | Private Period & Health Tracker',
-  description: 'Track your biological cycle with privacy-first insights.',
-};
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body className="antialiased bg-rose-50/40 text-gray-800">
-        <Navbar />
+    <html lang="en font-sans">
+      <body className="min-h-screen bg-pink-50/70 dark:bg-slate-950 text-gray-900 dark:text-slate-100 transition-colors duration-300">
         {children}
       </body>
     </html>

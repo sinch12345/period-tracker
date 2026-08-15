@@ -1,190 +1,343 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion, Variants } from 'framer-motion';
-import LogPeriodModal from '@/components/LogPeriodModal';
-import CycleSummary from '@/components/CycleSummary';
-import CyclePhaseTracker from '@/components/CyclePhaseTracker';
-import CalendarView from '@/components/CalendarView';
-import { PeriodLog } from '@/types';
-import { Plus, ShieldCheck } from 'lucide-react';
-import { Sparkles } from 'lucide-react';
-import AIChatDrawer from '@/components/AIChatDrawer';
+import Navbar from '@/components/Navbar';
 import MoodCreature from '@/components/MoodCreature';
+import AIChatDrawer from '@/components/AIChatDrawer';
+import { PeriodLog } from '@/types';
+import { motion } from 'framer-motion';
+import { Plus, Sparkles, Sun, Moon, Calendar as CalendarIcon, Heart, User } from 'lucide-react';
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { type: 'spring', stiffness: 300, damping: 24 } 
-  },
-};
-
-export default function Home() {
+export default function DashboardPage() {
+  const [logs, setLogs] = useState<PeriodLog[]>([]);
+  const [isDark, setIsDark] = useState(false);
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [logs, setLogs] = useState<PeriodLog[]>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  // Modal form state
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [flow, setFlow] = useState<'light' | 'medium' | 'heavy'>('medium');
+  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
+  const [notes, setNotes] = useState('');
+
+  // Sync theme, logs, and user state on mount
   useEffect(() => {
-    const saved = localStorage.getItem('period_logs');
-    if (saved) {
+    const savedTheme = localStorage.getItem('aura_theme');
+    if (savedTheme === 'dark') {
+      setIsDark(true);
+      document.documentElement.classList.add('dark');
+    } else {
+      setIsDark(false);
+      document.documentElement.classList.remove('dark');
+    }
+
+    const savedLogs = localStorage.getItem('period_logs');
+    if (savedLogs) {
       try {
-        setLogs(JSON.parse(saved));
+        setLogs(JSON.parse(savedLogs));
       } catch (e) {
-        console.error('Failed to parse logs', e);
+        console.error('Failed to parse period logs', e);
       }
+    }
+
+    const savedUser = localStorage.getItem('aura_user');
+    if (savedUser) {
+      setIsLoggedIn(true);
     }
   }, []);
 
-  const handleSaveLog = (newLog: PeriodLog) => {
+  const toggleTheme = () => {
+  const nextDark = !isDark;
+  setIsDark(nextDark);
+  if (nextDark) {
+    document.documentElement.classList.add('dark');
+    localStorage.setItem('aura_theme', 'dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+    localStorage.setItem('aura_theme', 'light');
+  }
+};
+
+ const handleUserAuth = () => {
+  localStorage.removeItem('aura_user');
+  window.location.href = '/';
+};
+
+  const handleSymptomToggle = (symptom: string) => {
+    if (selectedSymptoms.includes(symptom)) {
+      setSelectedSymptoms(selectedSymptoms.filter((s) => s !== symptom));
+    } else {
+      setSelectedSymptoms([...selectedSymptoms, symptom]);
+    }
+  };
+
+  const handleSaveLog = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!startDate || !endDate) return;
+
+    const newLog: PeriodLog = {
+      id: Date.now().toString(),
+      startDate,
+      endDate,
+      flow,
+      symptoms: selectedSymptoms,
+      notes,
+    };
+
     const updatedLogs = [newLog, ...logs];
     setLogs(updatedLogs);
     localStorage.setItem('period_logs', JSON.stringify(updatedLogs));
+
+    setStartDate('');
+    setEndDate('');
+    setFlow('medium');
+    setSelectedSymptoms([]);
+    setNotes('');
+    setIsModalOpen(false);
   };
 
-  return (
+  const symptomOptions = ['Cramps', 'Fatigue', 'Bloating', 'Mood Swings', 'Headache', 'Acne'];
 
-    
-    <main className="min-h-screen bg-gradient-to-b from-rose-50/60 via-pink-50/20 to-rose-50/40 p-6">
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-        className="max-w-4xl mx-auto space-y-6"
-      >
+  return (
+    <main className="min-h-screen bg-pink-50/70 dark:bg-slate-950 p-6 transition-colors duration-300">
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Navigation Bar */}
+        <Navbar activeTab="dashboard" />
+
         {/* Hero Header Card */}
-        <motion.div 
-          variants={itemVariants} 
-          className="relative overflow-hidden bg-white/70 backdrop-blur-md rounded-3xl p-6 border border-rose-100/80 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
-        >
-          <div className="absolute -right-10 -top-10 w-40 h-40 bg-rose-200/40 rounded-full blur-2xl pointer-events-none" />
-          
+        <div className="bg-white dark:bg-slate-900 border border-rose-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100/70 text-rose-700 text-[11px] font-semibold mb-2">
-              <Sparkles className="w-3 h-3" />
-              <span>Personal Health Suite</span>
-            </div>
-            <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight">Cycle Overview</h1>
-            <p className="text-gray-500 text-xs mt-1 flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 inline" />
-              End-to-end encrypted storage on device
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
+              Welcome to AuraCycle <Heart className="w-5 h-5 text-rose-500 fill-rose-500 inline" />
+            </h1>
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+              Your intelligent, private period & hormonal health companion.
             </p>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-bold rounded-2xl shadow-md shadow-rose-500/20 transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Log Period</span>
-          </motion.button>
-        </motion.div>
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            {/* User Login/Logout Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleUserAuth}
+              className={`p-2.5 rounded-2xl border text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs ${
+                isLoggedIn
+                  ? 'bg-rose-100 dark:bg-rose-950/60 border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300'
+                  : 'bg-white dark:bg-slate-900 border-rose-100 dark:border-slate-800 text-gray-700 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-slate-800'
+              }`}
+            >
+              <User className="w-4 h-4 text-rose-500" />
+              <span>{isLoggedIn ? 'Account' : 'Log In'}</span>
+            </motion.button>
+
+            {/* Dark/Light Mode Toggle */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleTheme}
+              className={`p-2.5 rounded-2xl border text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs ${
+                isDark
+                  ? 'bg-slate-900 border-slate-700 text-amber-400 hover:bg-slate-800'
+                  : 'bg-white border-rose-100 text-gray-700 hover:bg-rose-50'
+              }`}
+              title="Toggle Theme"
+            >
+              {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-rose-500" />}
+              <span className="hidden sm:inline">{isDark ? 'Light' : 'Dark'}</span>
+            </motion.button>
+
+            {/* Log Period Button */}
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-bold rounded-2xl shadow-md shadow-rose-500/20 transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Log Period</span>
+            </motion.button>
+          </div>
+        </div>
 
         {/* Living Avatar Creature */}
-<div className="mb-6">
-  <MoodCreature logs={logs} />
-</div>
+        <MoodCreature logs={logs} />
 
-        {/* Dynamic Cycle Summary Cards */}
-        <motion.div variants={itemVariants}>
-          <CycleSummary logs={logs} />
-        </motion.div>
-
-        {/* Cycle Phase Progress Bar */}
-        <motion.div variants={itemVariants}>
-          <CyclePhaseTracker logs={logs} />
-        </motion.div>
-
-        {/* Interactive Visual Calendar */}
-        <motion.div variants={itemVariants}>
-          <CalendarView logs={logs} />
-        </motion.div>
-
-        {/* Recent Logs List Card */}
-        <motion.div 
-          variants={itemVariants} 
-          className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-rose-100/80"
-        >
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-base font-bold text-gray-800">Logged Cycles</h2>
-            <span className="text-xs text-gray-400 font-medium">{logs.length} Entries</span>
-          </div>
+        {/* Recent Logs Section */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-rose-100 dark:border-slate-800">
+          <h2 className="text-base font-bold text-gray-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+            <CalendarIcon className="w-4 h-4 text-rose-500" />
+            Recent Cycle Logs
+          </h2>
 
           {logs.length === 0 ? (
-            <div className="py-10 text-center border-2 border-dashed border-rose-100 rounded-2xl">
-              <p className="text-gray-400 text-xs italic">
-                No period logs yet. Click "+ Log Period" to record your first entry!
+            <div className="text-center py-10 border border-dashed border-rose-200 dark:border-slate-800 rounded-xl">
+              <p className="text-gray-400 dark:text-slate-500 text-xs italic">
+                No logs recorded yet. Click "+ Log Period" to record your first entry!
               </p>
             </div>
           ) : (
             <div className="space-y-3">
               {logs.map((log) => (
-                <motion.div
+                <div
                   key={log.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="p-4 rounded-2xl bg-gradient-to-r from-rose-50/50 to-pink-50/30 border border-rose-100/60 flex justify-between items-center hover:border-rose-200 transition-all"
+                  className="p-4 rounded-xl border border-rose-100 dark:border-slate-800 bg-rose-50/40 dark:bg-slate-800/50 flex flex-col sm:flex-row justify-between sm:items-center gap-2"
                 >
                   <div>
-                    <p className="text-xs font-bold text-gray-800">
-                      {log.startDate} to {log.endDate}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-rose-200/60 text-rose-800 font-bold capitalize">
-                        {log.flow} flow
-                      </span>
-                      {log.symptoms.map((symptom) => (
-                        <span 
-                          key={symptom} 
-                          className="text-[10px] text-gray-600 bg-white px-2 py-0.5 rounded-full border border-gray-100 font-medium"
-                        >
-                          {symptom}
-                        </span>
-                      ))}
-                    </div>
+                    <span className="text-xs font-bold text-gray-800 dark:text-slate-200">
+                      {log.startDate} → {log.endDate}
+                    </span>
+                    <span className="ml-2 text-[10px] px-2 py-0.5 rounded-md bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold capitalize">
+                      {log.flow} Flow
+                    </span>
+                    {log.symptoms.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {log.symptoms.map((symptom) => (
+                          <span
+                            key={symptom}
+                            className="text-[10px] bg-white dark:bg-slate-900 border border-rose-100 dark:border-slate-700 text-gray-600 dark:text-slate-300 px-2 py-0.5 rounded-full"
+                          >
+                            {symptom}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </motion.div>
+                  {log.notes && (
+                    <p className="text-xs italic text-gray-500 dark:text-slate-400 max-w-xs">{log.notes}</p>
+                  )}
+                </div>
               ))}
             </div>
           )}
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <LogPeriodModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveLog}
-      />
+      {/* Floating AI Drawer Trigger */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <motion.button
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.92 }}
+          onClick={() => setIsAIChatOpen(true)}
+          className="px-5 py-3.5 bg-gradient-to-r from-rose-500 via-pink-500 to-purple-500 text-white font-bold text-xs rounded-full shadow-2xl shadow-rose-500/40 flex items-center gap-2 border border-white/30 backdrop-blur-md cursor-pointer"
+        >
+          <Sparkles className="w-4 h-4 animate-pulse" />
+          <span>Explain My Body AI</span>
+        </motion.button>
+      </div>
 
-      {/* Secret AI Chat Trigger Button */}
-<motion.button
-  whileHover={{ scale: 1.08 }}
-  whileTap={{ scale: 0.92 }}
-  onClick={() => setIsAIChatOpen(true)}
-  className="fixed bottom-6 right-6 z-40 px-4 py-3 bg-gradient-to-r from-rose-500 via-pink-500 to-purple-500 text-white font-bold text-xs rounded-full shadow-xl shadow-rose-500/30 flex items-center gap-2 border border-white/20 backdrop-blur-md"
->
-  <Sparkles className="w-4 h-4 animate-pulse" />
-  <span>Explain My Body AI</span>
-</motion.button>
+      {/* Secret AI Drawer */}
+      <AIChatDrawer isOpen={isAIChatOpen} onClose={() => setIsAIChatOpen(false)} logs={logs} />
 
-{/* AI Chat Drawer */}
-<AIChatDrawer
-  isOpen={isAIChatOpen}
-  onClose={() => setIsAIChatOpen(false)}
-  logs={logs}
-/>
+      {/* Log Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white dark:bg-slate-900 border border-rose-100 dark:border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4"
+          >
+            <h3 className="text-base font-bold text-gray-800 dark:text-slate-100">Log Cycle Entry</h3>
+
+            <form onSubmit={handleSaveLog} className="space-y-4 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-gray-600 dark:text-slate-400 mb-1 font-medium">Start Date</label>
+                  <input
+                    type="date"
+                    required
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-600 dark:text-slate-400 mb-1 font-medium">End Date</label>
+                  <input
+                    type="date"
+                    required
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-gray-600 dark:text-slate-400 mb-1 font-medium">Flow Intensity</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['light', 'medium', 'heavy'] as const).map((f) => (
+                    <button
+                      key={f}
+                      type="button"
+                      onClick={() => setFlow(f)}
+                      className={`p-2 rounded-xl border text-center font-semibold capitalize transition ${
+                        flow === f
+                          ? 'bg-rose-500 text-white border-rose-500'
+                          : 'bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300'
+                      }`}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-gray-600 dark:text-slate-400 mb-1 font-medium">Symptoms</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {symptomOptions.map((symptom) => {
+                    const selected = selectedSymptoms.includes(symptom);
+                    return (
+                      <button
+                        key={symptom}
+                        type="button"
+                        onClick={() => handleSymptomToggle(symptom)}
+                        className={`px-3 py-1.5 rounded-full border text-[11px] font-medium transition ${
+                          selected
+                            ? 'bg-rose-100 dark:bg-rose-950/70 border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300'
+                            : 'bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400'
+                        }`}
+                      >
+                        {symptom}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-gray-600 dark:text-slate-400 mb-1 font-medium">Notes</label>
+                <textarea
+                  rows={2}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Mood, cravings, or general notes..."
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl shadow-md"
+                >
+                  Save Log
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </main>
   );
 }
-

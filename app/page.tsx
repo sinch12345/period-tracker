@@ -3,121 +3,99 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Heart, Mail, Lock, User, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Heart, ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
 
-export default function LoginPage() {
+export default function RootPage() {
   const router = useRouter();
-  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  // If user is already logged in, automatically send them to the dashboard
   useEffect(() => {
+    // Check if user session exists on client mount
     const savedUser = localStorage.getItem('aura_user');
     if (savedUser) {
-      router.push('/dashboard');
+      router.replace('/dashboard');
+    } else {
+      setIsCheckingAuth(false);
     }
   }, [router]);
 
-  const handleAuth = (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    const userName = isSignUp ? name : email.split('@')[0] || 'User';
-    const userData = { name: userName, email };
+    if (!email) return;
 
-    // Save user session
-    localStorage.setItem('aura_user', JSON.stringify(userData));
-
-    // Redirect to main tracker dashboard
+    localStorage.setItem('aura_user', JSON.stringify({ email }));
     router.push('/dashboard');
   };
 
-  return (
-    <main className="min-h-screen bg-gradient-to-br from-rose-100 via-pink-50 to-rose-200 flex items-center justify-center p-6">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.3 }}
-        className="w-full max-w-md bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-rose-100 relative overflow-hidden"
-      >
-        <div className="absolute -right-12 -top-12 w-36 h-36 bg-rose-300/30 rounded-full blur-2xl pointer-events-none" />
+  // Prevent flash of login screen while checking local storage
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-pink-50/70 dark:bg-slate-950 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-rose-500 animate-spin" />
+      </div>
+    );
+  }
 
-        {/* Brand Header */}
-        <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-gradient-to-tr from-rose-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-3 text-white shadow-lg shadow-rose-500/30">
-            <Heart className="w-7 h-7 fill-white" />
+  return (
+    <main className="min-h-screen bg-pink-50/70 dark:bg-slate-950 flex flex-col items-center justify-center p-6 transition-colors duration-300">
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md bg-white dark:bg-slate-900 border border-rose-100 dark:border-slate-800 rounded-3xl p-8 shadow-xl space-y-6"
+      >
+        {/* Logo Header */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex p-3 bg-gradient-to-tr from-rose-500 to-pink-500 text-white rounded-2xl shadow-md">
+            <Heart className="w-8 h-8 fill-white" />
           </div>
-          <h1 className="text-2xl font-extrabold text-gray-800 tracking-tight">AuraCycle</h1>
-          <p className="text-xs text-gray-500 mt-1">
-            {isSignUp ? 'Create an account to begin tracking' : 'Sign in to access your personal dashboard'}
+          <h1 className="text-2xl font-extrabold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
+            AuraCycle
+          </h1>
+          <p className="text-xs text-gray-500 dark:text-slate-400">
+            Sign in to access your private cycle dashboard & health insights.
           </p>
         </div>
 
-        {/* Auth Form */}
-        <form onSubmit={handleAuth} className="space-y-4">
-          {isSignUp && (
-            <div className="relative">
-              <User className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
-              <input
-                type="text"
-                placeholder="Full Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="w-full pl-10 pr-4 py-3 bg-gray-50/80 border border-gray-200 rounded-2xl text-xs text-gray-800 focus:outline-none focus:border-rose-400 transition"
-              />
-            </div>
-          )}
-
-          <div className="relative">
-            <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
+        {/* Form */}
+        <form onSubmit={handleLogin} className="space-y-4 text-xs">
+          <div>
+            <label className="block text-gray-700 dark:text-slate-300 font-semibold mb-1">Email Address</label>
             <input
               type="email"
-              placeholder="Email Address"
+              required
+              placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full pl-10 pr-4 py-3 bg-gray-50/80 border border-gray-200 rounded-2xl text-xs text-gray-800 focus:outline-none focus:border-rose-400 transition"
+              className="w-full p-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-rose-400"
             />
           </div>
 
-          <div className="relative">
-            <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
+          <div>
+            <label className="block text-gray-700 dark:text-slate-300 font-semibold mb-1">Password</label>
             <input
               type="password"
-              placeholder="Password"
+              required
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full pl-10 pr-4 py-3 bg-gray-50/80 border border-gray-200 rounded-2xl text-xs text-gray-800 focus:outline-none focus:border-rose-400 transition"
+              className="w-full p-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-rose-400"
             />
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <button
             type="submit"
-            className="w-full py-3 mt-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-bold rounded-2xl shadow-lg shadow-rose-500/25 flex items-center justify-center gap-2 transition"
+            className="w-full py-3 px-4 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/20 flex items-center justify-center gap-2 transition"
           >
-            <span>{isSignUp ? 'Create Account' : 'Sign In'}</span>
+            <span>Continue to Dashboard</span>
             <ArrowRight className="w-4 h-4" />
-          </motion.button>
+          </button>
         </form>
 
-        {/* Mode Toggle */}
-        <div className="text-center mt-6 pt-5 border-t border-gray-100">
-          <button
-            onClick={() => setIsSignUp(!isSignUp)}
-            className="text-xs text-rose-600 font-semibold hover:underline"
-          >
-            {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
-          </button>
-        </div>
-
-        {/* Security Note */}
-        <div className="mt-6 flex items-center justify-center gap-1.5 text-[11px] text-gray-400">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-          <span>Private & Encrypted Local Session</span>
+        <div className="flex items-center gap-2 p-3 bg-rose-50 dark:bg-slate-800/60 rounded-xl text-rose-700 dark:text-rose-300 text-[11px]">
+          <ShieldCheck className="w-4 h-4 flex-shrink-0 text-rose-500" />
+          <span>Private & Encrypted: All data stays on your local browser.</span>
         </div>
       </motion.div>
     </main>
