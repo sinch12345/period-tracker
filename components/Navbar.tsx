@@ -25,10 +25,11 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem('aura_user');
     setUser(null);
+    window.location.href = '/'; // Redirects straight to the root login screen
   };
 
   const navItems = [
-    { name: 'Dashboard', href: '/', icon: Calendar },
+    { name: 'Dashboard', href: '/dashboard', icon: Calendar },
     { name: 'Analytics', href: '/analytics', icon: BarChart2 },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
