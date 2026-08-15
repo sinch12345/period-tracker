@@ -7,7 +7,10 @@ import CycleSummary from '@/components/CycleSummary';
 import CyclePhaseTracker from '@/components/CyclePhaseTracker';
 import CalendarView from '@/components/CalendarView';
 import { PeriodLog } from '@/types';
-import { Plus, Sparkles, ShieldCheck } from 'lucide-react';
+import { Plus, ShieldCheck } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+import AIChatDrawer from '@/components/AIChatDrawer';
+
 
 
 
@@ -29,6 +32,7 @@ const itemVariants: Variants = {
 };
 
 export default function Home() {
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [logs, setLogs] = useState<PeriodLog[]>([]);
 
@@ -50,6 +54,8 @@ export default function Home() {
   };
 
   return (
+
+    
     <main className="min-h-screen bg-gradient-to-b from-rose-50/60 via-pink-50/20 to-rose-50/40 p-6">
       <motion.div
         variants={containerVariants}
@@ -157,6 +163,24 @@ export default function Home() {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveLog}
       />
+
+      {/* Secret AI Chat Trigger Button */}
+<motion.button
+  whileHover={{ scale: 1.08 }}
+  whileTap={{ scale: 0.92 }}
+  onClick={() => setIsAIChatOpen(true)}
+  className="fixed bottom-6 right-6 z-40 px-4 py-3 bg-gradient-to-r from-rose-500 via-pink-500 to-purple-500 text-white font-bold text-xs rounded-full shadow-xl shadow-rose-500/30 flex items-center gap-2 border border-white/20 backdrop-blur-md"
+>
+  <Sparkles className="w-4 h-4 animate-pulse" />
+  <span>Explain My Body AI</span>
+</motion.button>
+
+{/* AI Chat Drawer */}
+<AIChatDrawer
+  isOpen={isAIChatOpen}
+  onClose={() => setIsAIChatOpen(false)}
+  logs={logs}
+/>
     </main>
   );
 }
