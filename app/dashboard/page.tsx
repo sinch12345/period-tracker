@@ -10,9 +10,7 @@ import { PeriodLog } from '@/types';
 import { Plus, ShieldCheck } from 'lucide-react';
 import { Sparkles } from 'lucide-react';
 import AIChatDrawer from '@/components/AIChatDrawer';
-
-
-
+import MoodCreature from '@/components/MoodCreature';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -92,6 +90,11 @@ export default function Home() {
             <span>Log Period</span>
           </motion.button>
         </motion.div>
+
+        {/* Living Avatar Creature */}
+<div className="mb-6">
+  <MoodCreature logs={logs} />
+</div>
 
         {/* Dynamic Cycle Summary Cards */}
         <motion.div variants={itemVariants}>
