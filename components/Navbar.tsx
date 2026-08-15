@@ -42,6 +42,8 @@ export default function Navbar({ activeTab = 'dashboard' }: NavbarProps) {
         </span>
       </Link>
 
+      
+
       {/* Nav Links */}
       <div className="flex items-center gap-1 sm:gap-2">
         {navItems.map((item) => {
