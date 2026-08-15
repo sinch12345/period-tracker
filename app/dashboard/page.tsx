@@ -9,6 +9,8 @@ import CalendarView from '@/components/CalendarView';
 import { PeriodLog } from '@/types';
 import { Plus, Sparkles, ShieldCheck } from 'lucide-react';
 
+
+
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   show: {
@@ -158,3 +160,4 @@ export default function Home() {
     </main>
   );
 }
+
